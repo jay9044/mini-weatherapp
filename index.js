@@ -10,7 +10,7 @@ const mainPhotoContainer = document.querySelector(".photo");
 const thumbContainer = document.querySelector(".thumbs");
 const weatherDescription = document.querySelector("#conditions")
 const credit = document.querySelector("#credit-user");
-
+const unsplash = document.querySelector("#credit-platform");
 // listen out for input value from submitted form
 form.addEventListener("submit", function (event) {
     event.preventDefault()
@@ -41,9 +41,10 @@ function getPhotos(location, locationWeather) {
     fetch(url)
         .then(response => response.json())
         .then(body => {
+            console.log(body);
             //clear mainContainer node/selector
             mainPhotoContainer.innerHTML = "";
-            loadFirstPhoto(body.results, locationWeather);
+            loadFirstPhoto(body.results, locationWeather, location);
             renderThumbs(body.results);
             createThumbLinks(body.results);
         });
@@ -51,16 +52,17 @@ function getPhotos(location, locationWeather) {
 
 
 
-function loadFirstPhoto(resultsArray, locationWeather) {
+function loadFirstPhoto(resultsArray, locationWeather, location) {
     mainPhotoContainer.innerHTML = `<img src="${resultsArray[0].urls.regular}">`;
     credit.innerHTML = `${resultsArray[0].user.first_name} ${resultsArray[0].user.last_name}`;
-    weatherDescription.innerHTML = `${locationWeather.split("+").join(" ")}`;
+    weatherDescription.innerHTML = `The weather in ${location} is ${locationWeather.split("+").join(" ")}`;
 }
 
 //creating the thumbnail images
 function renderThumbs(resultsArray) {
     let hmtlOutput = "";
     resultsArray.forEach((result, index) => {
+        // if image is main image give thumb and active class, otherwise just give give thumb class
         let thumbClass = index === 0 ? `thumb active` : `thumb`;
         hmtlOutput += `<div><img class="${thumbClass}" src="${result.urls.regular}"></div>`;
     });
@@ -72,24 +74,27 @@ function createThumbLinks(resultsArray) {
     thumbLinks.forEach((thumbImage, counter) => {
         let name = `${resultsArray[counter].user.first_name} ${resultsArray[counter].user.last_name}`;
         thumbImage.name = name;
-        thumbImage.addEventListener("click", function (event) {
+        thumbImage.profile = `${resultsArray[counter].user.portfolio_url}`;
+        thumbImage.unsplash =`${resultsArray[counter].user.links.self}`;
+        console.log(thumbImage.unsplash);
+        thumbImage.addEventListener("click", function(event){
             mainPhotoContainer.innerHTML = `<img src="${event.target.currentSrc}">`;
-            credit.innerHTML = `<a>${thumbImage.name}</a>`;
+            credit.innerHTML = `<a href="${thumbImage.profile}" target= "_blank">${thumbImage.name}</a>`;
+            unsplash.innerHTML = `<a href="${thumbImage.unsplash}" target= "_blank">Unsplash</a>`;
             const prevThumb = document.querySelector(".active");
             if (prevThumb !== null) {
                 prevThumb.classList.remove("active")
                 event.target.classList.add("active")
             }
-        })
+        });
     })
 }
 
-function appendChild(parent, element) {
-    return parent.appendChild(element)
-}
 
-function createElement(element) {
-    return document.createElement(element)
-}
+    
+
+
+
 
 getWeather("italy");
+
